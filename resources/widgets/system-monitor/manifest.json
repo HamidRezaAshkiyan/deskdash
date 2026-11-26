@@ -1,0 +1,18 @@
+{
+  "id": "system-monitor",
+  "name": "System Monitor",
+  "version": "1.0.0",
+  "author": "DeskDash",
+  "description": "Real-time CPU, RAM, Disk, and Network throughput sparklines.",
+  "category": "System",
+  "kind": "widget",
+  "entry": "index.html",
+  "defaultSize": { "width": 320, "height": 220 },
+  "minSize": { "width": 260, "height": 180 },
+  "permissions": {
+    "system": true
+  },
+  "settingsSchema": [
+    { "key": "intervalMs", "label": "Refresh Interval (ms)", "type": "number", "default": 1500, "min": 500, "max": 10000 }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "top-status-bar",
+  "name": "Top Status Rail",
+  "version": "1.0.0",
+  "author": "DeskDash",
+  "description": "Slim top status bar displaying active window title, open apps, live CPU/RAM metrics, and clock.",
+  "category": "Taskbars",
+  "kind": "bar",
+  "entry": "index.html",
+  "defaultSize": { "width": 1920, "height": 36 },
+  "bar": {
+    "edge": "top",
+    "thickness": 36,
+    "reserveSpace": true,
+    "hideNativeTaskbar": false
+  },
+  "permissions": {
+    "taskbar": true,
+    "system": true
+  },
+  "settingsSchema": []
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: transparent;
+      font-family: "Segoe UI", system-ui, sans-serif; color: #f4f4f5;
+    }
+    dd-bar {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px;
+      background: rgba(10, 12, 18, 0.84);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      font-size: 12px;
+    }
+    .group { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .active-title { font-weight: 600; color: #e4e4e7; max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pill {
+      padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.08);
+      font-size: 11px; color: #cbd5e1; font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <dd-bar>
+    <div class="group">
+      <span style="color:#818cf8;font-weight:700;">DeskDash</span>
+      <span id="activeTitle" class="active-title">Desktop</span>
+    </div>
+    <div class="group">
+      <span id="cpu" class="pill">CPU 0%</span>
+      <span id="ram" class="pill">RAM 0%</span>
+      <span id="clock" style="font-weight:600;font-variant-numeric:tabular-nums;">00:00</span>
+    </div>
+  </dd-bar>
+  <script>
+    dd.taskbar.subscribeWindows((wins) => {
+      const focused = (wins || []).find((w) => w.isFocused);
+      document.getElementById("activeTitle").textContent = focused ? focused.title : "Desktop";
+    }, 1000);
+
+    dd.system.subscribe(2000, (st) => {
+      if (!st || st.paused) return;
+      document.getElementById("cpu").textContent = `CPU ${Math.round(st.cpuUsage || 0)}%`;
+      document.getElementById("ram").textContent = `RAM ${Math.round(st.memoryPercent || 0)}%`;
+    });
+
+    function tick() {
+      document.getElementById("clock").textContent = new Date().toLocaleTimeString([], {
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+    tick();
+    setInterval(tick, 5000);
+  </script>
+</body>
+</html>

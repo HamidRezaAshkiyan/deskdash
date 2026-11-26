@@ -1,0 +1,19 @@
+{
+  "id": "sticky-notes",
+  "name": "Sticky Notes",
+  "version": "1.0.0",
+  "author": "DeskDash",
+  "description": "Quick desktop notes persisted locally via dd.widget.storage.",
+  "category": "Productivity",
+  "kind": "widget",
+  "entry": "index.html",
+  "defaultSize": { "width": 280, "height": 240 },
+  "minSize": { "width": 200, "height": 160 },
+  "permissions": {
+    "storage": true
+  },
+  "settingsSchema": [
+    { "key": "title", "label": "Note Title", "type": "string", "default": "Quick Notes" },
+    { "key": "accentColor", "label": "Header Accent", "type": "color", "default": "#fbbf24" }
+  ]
+}

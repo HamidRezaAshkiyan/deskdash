@@ -1,0 +1,16 @@
+{
+  "id": "media-player",
+  "name": "Media Controls",
+  "version": "1.0.0",
+  "author": "DeskDash",
+  "description": "Now Playing track info and Windows SMTC playback controls.",
+  "category": "Media",
+  "kind": "widget",
+  "entry": "index.html",
+  "defaultSize": { "width": 320, "height": 124 },
+  "minSize": { "width": 250, "height": 100 },
+  "permissions": {
+    "media": true
+  },
+  "settingsSchema": []
+}

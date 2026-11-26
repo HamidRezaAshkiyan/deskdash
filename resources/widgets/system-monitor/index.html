@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: transparent;
+      font-family: "Segoe UI", system-ui, sans-serif; color: #f4f4f5;
+    }
+    .card {
+      width: 100%; height: 100%; border-radius: 20px;
+      background: rgba(15, 17, 26, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(18px);
+      padding: 14px 16px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .hdr { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #a1a1aa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .row { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .row-top { display: flex; justify-content: space-between; font-size: 12px; }
+    .bar { height: 6px; width: 100%; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+    .fill { height: 100%; border-radius: 999px; transition: width 0.35s ease; }
+    .cpu { background: linear-gradient(90deg, #6366f1, #38bdf8); }
+    .ram { background: linear-gradient(90deg, #10b981, #34d399); }
+    .disk { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .net { display: flex; justify-content: space-between; font-size: 11px; color: #a1a1aa; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); }
+    svg { width: 100%; height: 28px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="hdr"><span>System</span><span id="uptime">--</span></div>
+    <div class="row">
+      <div class="row-top"><span>CPU</span><span id="cpuVal">0%</span></div>
+      <div class="bar"><div id="cpuBar" class="fill cpu" style="width:0%"></div></div>
+      <svg id="spark" viewBox="0 0 200 28" preserveAspectRatio="none">
+        <polyline id="sparkLine" fill="none" stroke="#38bdf8" stroke-width="2" points="" />
+      </svg>
+    </div>
+    <div class="row">
+      <div class="row-top"><span>RAM</span><span id="ramVal">0%</span></div>
+      <div class="bar"><div id="ramBar" class="fill ram" style="width:0%"></div></div>
+    </div>
+    <div class="row">
+      <div class="row-top"><span>Disk</span><span id="diskVal">--</span></div>
+      <div class="bar"><div id="diskBar" class="fill disk" style="width:0%"></div></div>
+    </div>
+    <div class="net">
+      <span id="rx">↓ 0 KB/s</span>
+      <span id="tx">↑ 0 KB/s</span>
+    </div>
+  </div>
+  <script>
+    const history = [];
+    function fmtRate(bps) {
+      if (bps > 1048576) return (bps / 1048576).toFixed(1) + " MB/s";
+      return Math.round(bps / 1024) + " KB/s";
+    }
+    function fmtUptime(s) {
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      return `${h}h ${m}m`;
+    }
+    function update(st) {
+      if (!st || st.paused) return;
+      const cpu = Math.round(st.cpuUsage || 0);
+      const ram = Math.round(st.memoryPercent || 0);
+      document.getElementById("cpuVal").textContent = cpu + "%";
+      document.getElementById("cpuBar").style.width = cpu + "%";
+      document.getElementById("ramVal").textContent = `${ram}% (${(st.memoryUsedBytes/1e9).toFixed(1)} GB)`;
+      document.getElementById("ramBar").style.width = ram + "%";
+      document.getElementById("uptime").textContent = "UP " + fmtUptime(st.uptimeSecs || 0);
+      document.getElementById("rx").textContent = "↓ " + fmtRate(st.netRxBytesPerSec || 0);
+      document.getElementById("tx").textContent = "↑ " + fmtRate(st.netTxBytesPerSec || 0);
+
+      if (st.disks && st.disks[0] && st.disks[0].totalBytes > 0) {
+        const d = st.disks[0];
+        const pct = Math.round((d.usedBytes / d.totalBytes) * 100);
+        document.getElementById("diskVal").textContent = `${pct}% (${d.mountPoint})`;
+        document.getElementById("diskBar").style.width = pct + "%";
+      }
+
+      history.push(cpu);
+      if (history.length > 24) history.shift();
+      const pts = history.map((v, i) => {
+        const x = (i / Math.max(1, history.length - 1)) * 200;
+        const y = 26 - (Math.min(100, v) / 100) * 24;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(" ");
+      document.getElementById("sparkLine").setAttribute("points", pts);
+    }
+
+    async function init() {
+      let interval = 1500;
+      try { const c = await dd.widget.getConfig(); if (c && c.intervalMs) interval = c.intervalMs; } catch {}
+      dd.system.subscribe(interval, update);
+    }
+    init();
+  </script>
+</body>
+</html>

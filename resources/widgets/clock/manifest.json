@@ -1,0 +1,19 @@
+{
+  "id": "clock",
+  "name": "Glass Clock",
+  "version": "1.0.0",
+  "author": "DeskDash",
+  "description": "Minimalist desktop clock with 12/24h toggle, seconds, and optional Jalali date.",
+  "category": "Time",
+  "kind": "widget",
+  "entry": "index.html",
+  "defaultSize": { "width": 320, "height": 150 },
+  "minSize": { "width": 200, "height": 110 },
+  "permissions": {},
+  "settingsSchema": [
+    { "key": "use24Hour", "label": "24-Hour Format", "type": "boolean", "default": true },
+    { "key": "showSeconds", "label": "Show Seconds", "type": "boolean", "default": true },
+    { "key": "showJalali", "label": "Show Jalali Date", "type": "boolean", "default": false },
+    { "key": "accentColor", "label": "Accent Color", "type": "color", "default": "#818cf8" }
+  ]
+}

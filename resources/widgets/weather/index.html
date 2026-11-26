@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: transparent;
+      font-family: "Segoe UI", system-ui, sans-serif; color: #f4f4f5;
+    }
+    .card {
+      width: 100%; height: 100%; border-radius: 20px;
+      background: linear-gradient(145deg, rgba(23, 37, 84, 0.72), rgba(15, 23, 42, 0.78));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(18px);
+      padding: 16px 18px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .city { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.9); }
+    .desc { font-size: 11px; color: rgba(148,163,184,0.9); margin-top: 2px; }
+    .temp { font-size: 38px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+    .forecast { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .day {
+      background: rgba(255,255,255,0.06); border-radius: 10px; padding: 6px 8px;
+      text-align: center; font-size: 11px;
+    }
+    .day .dname { color: rgba(255,255,255,0.65); }
+    .day .dtemp { font-weight: 600; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div>
+        <div id="city" class="city">Loading...</div>
+        <div id="desc" class="desc">Fetching forecast</div>
+      </div>
+      <div id="temp" class="temp">--°</div>
+    </div>
+    <div id="forecast" class="forecast"></div>
+  </div>
+  <script>
+    let cfg = { city: "Berlin", unit: "celsius" };
+    const WMO = {
+      0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+      45: "Foggy", 51: "Light drizzle", 61: "Rain", 71: "Snow", 95: "Thunderstorm"
+    };
+
+    async function refresh() {
+      try {
+        const geoRes = await dd.network.fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cfg.city || "Berlin")}&count=1`
+        );
+        const geo = JSON.parse(geoRes.body);
+        const place = geo.results && geo.results[0];
+        if (!place) {
+          document.getElementById("desc").textContent = "City not found";
+          return;
+        }
+        const unitParam = cfg.unit === "fahrenheit" ? "fahrenheit" : "celsius";
+        const sym = cfg.unit === "fahrenheit" ? "°F" : "°C";
+        const wRes = await dd.network.fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=${unitParam}&forecast_days=3`
+        );
+        const data = JSON.parse(wRes.body);
+        document.getElementById("city").textContent = `${place.name}, ${place.country_code || ""}`;
+        document.getElementById("temp").textContent = `${Math.round(data.current.temperature_2m)}${sym}`;
+        document.getElementById("desc").textContent = WMO[data.current.weather_code] || "Conditions updated";
+
+        const fEl = document.getElementById("forecast");
+        fEl.innerHTML = "";
+        (data.daily.time || []).slice(0, 3).forEach((iso, i) => {
+          const d = new Date(iso + "T12:00:00");
+          const div = document.createElement("div");
+          div.className = "day";
+          div.innerHTML = `<div class="dname">${d.toLocaleDateString(undefined, { weekday: "short" })}</div>
+            <div class="dtemp">${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</div>`;
+          fEl.appendChild(div);
+        });
+      } catch (err) {
+        document.getElementById("desc").textContent = err.message || "Offline";
+      }
+    }
+
+    async function init() {
+      try { const c = await dd.widget.getConfig(); if (c) cfg = { ...cfg, ...c }; } catch {}
+      dd.widget.onConfigChange((next) => { cfg = { ...cfg, ...next }; refresh(); });
+      refresh();
+      setInterval(refresh, 15 * 60 * 1000);
+    }
+    init();
+  </script>
+</body>
+</html>

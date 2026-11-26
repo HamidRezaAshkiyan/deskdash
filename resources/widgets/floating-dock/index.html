@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: transparent;
+      font-family: "Segoe UI", system-ui, sans-serif; color: #f4f4f5;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 6px 12px;
+    }
+    dd-bar {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 46px; padding: 0 12px;
+      border-radius: 16px;
+      background: rgba(15, 17, 26, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+    }
+    .btn {
+      border: 0; background: transparent; color: #e4e4e7;
+      padding: 6px 10px; border-radius: 10px; cursor: pointer;
+      font-size: 12px; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: background 0.15s, transform 0.12s;
+      max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .btn:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+    .btn.active { background: rgba(99, 102, 241, 0.35); color: #fff; box-shadow: inset 0 -2px 0 #818cf8; }
+    .btn.minimized { opacity: 0.55; }
+    .start { font-weight: 700; color: #818cf8; }
+    .sep { width: 1px; height: 22px; background: rgba(255,255,255,0.12); margin: 0 2px; }
+    .clock { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 0 4px; }
+    .media-txt { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: #d4d4d8; }
+  </style>
+</head>
+<body>
+  <dd-bar id="main-dock">
+    <button id="startBtn" class="btn start" title="Open Start Menu">❖ Start</button>
+    <div class="sep"></div>
+    <div id="winList" style="display:flex;align-items:center;gap:4px;"></div>
+  </dd-bar>
+
+  <dd-bar id="media-pill" style="display:none;">
+    <button id="playBtn" class="btn" style="padding:4px 8px;">▶</button>
+    <span id="mediaTitle" class="media-txt">Idle</span>
+  </dd-bar>
+
+  <dd-bar id="clock-pill">
+    <span id="cpuPill" style="font-size:11px;color:#38bdf8;">CPU 0%</span>
+    <div class="sep"></div>
+    <span id="clock" class="clock">00:00</span>
+  </dd-bar>
+
+  <script>
+    document.getElementById("startBtn").addEventListener("click", () => dd.taskbar.openStartMenu());
+    document.getElementById("playBtn").addEventListener("click", () => dd.media.playPause());
+
+    function renderWindows(wins) {
+      const container = document.getElementById("winList");
+      container.innerHTML = "";
+      (wins || []).slice(0, 8).forEach((w) => {
+        const b = document.createElement("button");
+        b.className = "btn" + (w.isFocused ? " active" : "") + (w.isMinimized ? " minimized" : "");
+        b.textContent = w.appName || w.title;
+        b.title = w.title;
+        b.addEventListener("click", () => {
+          if (w.isFocused && !w.isMinimized) dd.taskbar.minimizeWindow(w.id);
+          else dd.taskbar.focusWindow(w.id);
+        });
+        container.appendChild(b);
+      });
+      dd.widget.reportHitRects();
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleTimeString([], {
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    dd.taskbar.subscribeWindows(renderWindows, 1200);
+    dd.system.subscribe(2500, (st) => {
+      if (st && !st.paused) {
+        document.getElementById("cpuPill").textContent = `CPU ${Math.round(st.cpuUsage || 0)}%`;
+      }
+    });
+    dd.media.subscribe((s) => {
+      const pill = document.getElementById("media-pill");
+      if (s && s.title) {
+        pill.style.display = "inline-flex";
+        document.getElementById("mediaTitle").textContent = s.title;
+        document.getElementById("playBtn").textContent = s.isPlaying ? "⏸" : "▶";
+      } else {
+        pill.style.display = "none";
+      }
+      dd.widget.reportHitRects();
+    }, 2000);
+
+    updateClock();
+    setInterval(updateClock, 5000);
+  </script>
+</body>
+</html>

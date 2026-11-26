@@ -1,0 +1,25 @@
+{
+  "id": "floating-dock",
+  "name": "Floating Glass Dock",
+  "version": "1.0.0",
+  "author": "DeskDash",
+  "description": "Centered floating alternative taskbar with Start menu trigger, live window switcher, media pill, and clock.",
+  "category": "Taskbars",
+  "kind": "bar",
+  "entry": "index.html",
+  "defaultSize": { "width": 1200, "height": 64 },
+  "bar": {
+    "edge": "bottom",
+    "thickness": 64,
+    "reserveSpace": true,
+    "hideNativeTaskbar": false
+  },
+  "permissions": {
+    "taskbar": true,
+    "media": true,
+    "system": true
+  },
+  "settingsSchema": [
+    { "key": "showMediaPill", "label": "Show Media Pill", "type": "boolean", "default": true }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "weather",
+  "name": "Live Weather",
+  "version": "1.0.0",
+  "author": "DeskDash",
+  "description": "Current conditions and 3-day forecast powered by Open-Meteo (no API key required).",
+  "category": "Weather",
+  "kind": "widget",
+  "entry": "index.html",
+  "defaultSize": { "width": 300, "height": 190 },
+  "minSize": { "width": 240, "height": 150 },
+  "permissions": {
+    "network": ["api.open-meteo.com", "geocoding-api.open-meteo.com"]
+  },
+  "settingsSchema": [
+    { "key": "city", "label": "City", "type": "string", "default": "Berlin" },
+    { "key": "unit", "label": "Temperature Unit", "type": "select", "default": "celsius", "options": [
+      { "label": "Celsius (°C)", "value": "celsius" },
+      { "label": "Fahrenheit (°F)", "value": "fahrenheit" }
+    ]}
+  ]
+}
